@@ -1,0 +1,45 @@
+﻿<div id="PopupInsert" style="z-index:100;display:none; position:fixed; top:50%; left:50%;transform: translate(-50%, -50%); width:60%; background:#fff; border:1px solid #ccc; padding:20px; box-shadow:0 0 10px #000;">
+    <form method="post" id="FormSaleOutInsert">
+        <input type="hidden" name="Id" id="Id" />
+        <input type="hidden" name="ProductId" id="ProductId" />
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;max-width: 800px;">
+            <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
+                <label>Số PO khách hàng <span style="color:red">*</span></label>
+                <input class="form-control" required type="text" name="CustomerPoNo" id="CustomerPoNo" />
+            </div>
+            <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
+                <label>Ngày đặt hàng <span style="color:red">*</span></label>
+                <input class="form-control" required type="date" name="OrderDate" id="OrderDate" />
+            </div>
+            <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
+                <label>Khách hàng <span style="color:red">*</span></label>
+                @Html.DropDownList("CustomerName", (IEnumerable<SelectListItem>)ViewBag.CustomerName, "Khách hàng", new { @class = "form-control", id = "CustomerName" })
+            </div>
+            <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
+                <label>Mã sản phẩm <span style="color:red">*</span></label>
+                @Html.DropDownList("ProductCode", (IEnumerable<SelectListItem>)ViewBag.ProductCodes, "Mã sản phẩm", new { @class = "form-control", id = "ProductCode", onchange = "onProductCodeChange()" })
+            </div>
+            <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
+                <label>Tên sản phẩm <span style="color:red">*</span></label>
+                <input class="form-control" required type="text" id="ProductName" readonly />
+            </div>
+            <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
+                <label>Đơn vị tính <span style="color:red">*</span></label>
+                <input class="form-control" required type="text" id="Unit" readonly />
+            </div>
+            <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
+                <label>Số lượng <span style="color:red">*</span></label>
+                <input class="form-control" required type="number" name="Quantity" id="Quantity" oninput="updateBoxQuantity()" />
+            </div>
+            <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
+                <label>Số lượng/thùng <span style="color:red">*</span></label>
+                <input class="form-control" required type="text" id="QuantityPerBox" />
+            </div>
+            <input type="hidden" name="BoxQuantity" id="BoxQuantity" />
+        </div>
+        <div style=" margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" onclick="hidePopup('PopupInsert')">Đóng</button>
+            <button type="submit" id="submitButton">Thêm</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,153 @@
+﻿@model List<web_app.Models.MasterProduct>
+@{
+    ViewData["Title"] = "Master";
+}
+
+<div>
+    @{
+        Html.BeginForm("Index", "MasterProduct", FormMethod.Get);
+    }
+    <div class="d-flex justify-content-center mb-3" style="gap:10px">
+        @Html.DropDownList("categoryId", (IEnumerable<SelectListItem>)ViewBag.Categories, "Tên Trường")
+        <input class="form-control w-50" type="text" name="searchValue" value="@ViewBag.SearchValue" />
+        <button class="btn btn-success" type="submit">Tìm Kiếm</button>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <button class="btn btn-success" type="button" id="buttonAdd">Thêm mới</button>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-success" href="/MasterProduct/DownloadTemplate">Tải file mẫu Excel</a>
+            <button class="btn btn-success" type="button" id="buttonUploadProduct">Upload dữ liệu</button>
+        </div>
+    </div>
+    <p>
+        Hiển thị
+        @Html.DropDownList("totalPage",
+        new SelectList(new List<SelectListItem>
+                {
+                new SelectListItem { Text = "toàn bộ", Value = "-1" },
+                new SelectListItem { Text = "5", Value = "5" },
+                new SelectListItem { Text = "10", Value = "10" },
+                new SelectListItem { Text = "20", Value = "20" },
+                new SelectListItem { Text = "50", Value = "50" },
+                new SelectListItem { Text = "100", Value = "100" },
+                }, "Value", "Text", ViewBag.SelectedTotalPage),
+                new { @onchange = "this.form.submit()" })
+        bản ghi trên mỗi trang
+    </p>
+
+    @{
+        Html.EndForm();  
+    }
+</div>
+
+@Html.Partial("Overlay")
+@Html.Partial("PopupInsertEdit")
+@Html.Partial("PopupDelete")
+@Html.Partial("PopupUpload")
+
+<div style="margin-bottom:10px;">
+    <style>
+        table th, table td {
+            text-align: center;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+    </style>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Action</th>
+                <th>Mã Sản Phẩm</th>
+                <th>Tên sản phẩm</th>
+                <th>Đơn vị tính</th>
+                <th>Quy cách</th>
+                <th>Số lượng/thùng</th>
+                <th>Trọng lượng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int currentPage = ViewBag.CurrentPage ?? 1;
+                int pageSize = ViewBag.PageSize ?? 5;
+                int startIndex = (currentPage - 1) * pageSize + 1;
+                if(ViewBag.SelectedTotalPage == "-1") startIndex = 1;
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@startIndex</td>
+                    <td>
+                        <a class="btnEdit"
+                           data-id="@item.Id"
+                           data-code="@item.ProductCode"
+                           data-name="@item.ProductName"
+                           data-unit="@item.Unit"
+                           data-spec="@item.Specification"
+                           data-quantity="@item.QuantityPerBox"
+                           data-weight="@item.ProductWeight">
+                            <img src="~/images/edit.png" width="15" />
+                        </a> |
+                        <a class="btnDelete"
+                           data-id="@item.Id">
+                            <img src="~/images/delete.png" width="15" />
+                        </a>
+                    </td>
+                    <td>@item.ProductCode</td>
+                    <td>@item.ProductName</td>
+                    <td>@item.Unit</td>
+                    <td>@item.Specification</td>
+                    <td>@item.QuantityPerBox</td>
+                    <td>@item.ProductWeight</td>
+                </tr>
+                startIndex++;
+            }
+        </tbody>
+    </table>
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    var isActive = (i == ViewBag.CurrentPage) ? "active" : "";
+                    <li class="page-item @isActive">
+                        <a class="page-link" href="@Url.Action("Index", new {
+                            categoryId = ViewBag.CategoryId,
+                            searchValue = ViewBag.SearchValue,
+                            totalPage = ViewBag.SelectedTotalPage,
+                            page = i
+                        })">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+<script src="~/js/Upload.js"></script>
+<script src="~/js/InsertProduct.js"></script>
+<script src="~/js/EditProduct.js"></script>
+<script src="~/js/DeleteProduct.js"></script>
+<script>
+    const existingCodes = @Html.Raw(Json.Serialize(Model.Select(x => x.ProductCode)));
+    const form = document.getElementById("Form");
+
+    form.addEventListener("submit", function (e) {
+        if (!form.ProductCode.readOnly) {
+            const code = form.ProductCode.value.trim();
+            if (existingCodes.includes(code)) {
+                e.preventDefault();
+                alert("Mã sản phẩm đã tồn tại!");
+                return false;
+            }
+        }
+    });
+
+    function hidePopup(name) {
+        document.getElementById(name).style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    }
+</script>

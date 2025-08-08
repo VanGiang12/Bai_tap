@@ -1,0 +1,10 @@
+﻿<div id="PopupDelete" style="z-index:100;display:none; position:fixed; top:50%; left:50%;transform: translate(-50%, -50%); width:60%; background:#fff; border:1px solid #ccc; padding:20px; box-shadow:0 0 10px #000;">
+    <form asp-action="Delete" method="post" id="FormDelete">
+        <input type="hidden" name="Id" />
+        <h3>Bạn có chắc muốn xóa sản phẩm này?</h3>
+        <div style=" margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" onclick="hidePopup('PopupDelete')">Không</button>
+            <button type="submit">Có</button>
+        </div>
+    </form>
+</div>

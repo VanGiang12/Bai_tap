@@ -1,0 +1,14 @@
+﻿<div id="PopupUpload" style="z-index:100;display:none; position:fixed; top:50%; left:50%;transform: translate(-50%, -50%); width:30%; background:#fff; border:1px solid #ccc; padding:20px; box-shadow:0 0 10px #000;">
+    <form method="post" id="FormUpload" enctype="multipart/form-data">
+        <div>
+            <h4>Tải tệp tin lên</h4><br />
+            <a href="#" onclick="document.getElementById('fileInput').click(); return false;">Chọn tệp</a>
+            <input type="file" id="fileInput" name="uploadFile" style="display:none;" onchange="displayFileName(this)" />
+            <div id="fileNameDisplay" style="margin-top: 8px; font-style: italic;"></div>
+        </div>
+        <div style=" margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" onclick="hidePopup('PopupUpload')">Đóng</button>
+            <button type="submit" id="submitUpload">Tải lên</button>
+        </div>
+    </form>
+</div>
