@@ -13,12 +13,10 @@ function onProductCodeChange() {
 
     if (product) {
         document.getElementById("ProductId").value = product.Id;
-        document.getElementById("ProductName").value = product.ProductName || '';
         document.getElementById("Unit").value = product.Unit || '';
         document.getElementById("QuantityPerBox").value = product.QuantityPerBox || '';
     } else {
         document.getElementById("ProductId").value = '';
-        document.getElementById("ProductName").value = '';
         document.getElementById("Unit").value = '';
         document.getElementById("QuantityPerBox").value = '';
     }
@@ -57,8 +55,13 @@ form.addEventListener("submit", function (e) {
         alert(`Mã PO ${customerPoNo} và Mã sản phẩm ${productCode} đã tồn tại.`);
         return;
     }
+    const priceValue = parseFloat(document.getElementById("Price").value) || 0;
+    const qtyValue = parseFloat(quantityInput.value) || 0;
 
     const formData = {
+
+        Price: priceValue,
+        Amount: priceValue * qtyValue,
         CustomerPoNo: customerPoNo,
         OrderDate: parseInt(orderDateInput.value.replace(/-/g, '')),
         CustomerName: document.getElementById("CustomerName").value,
@@ -66,6 +69,7 @@ form.addEventListener("submit", function (e) {
         QuantityPerBox: parseFloat(quantityPerBoxInput.value),
         BoxQuantity: parseFloat(boxQuantityInput.value),
         ProductId: document.getElementById("ProductId").value
+    
     };
     console.log(formData);
 

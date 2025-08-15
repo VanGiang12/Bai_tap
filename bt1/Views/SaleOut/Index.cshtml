@@ -18,8 +18,9 @@
             <button class="btn btn-success" type="button" id="buttonAdd">Thêm mới</button>
         </div>
         <div class="d-flex gap-2">
-            <a class="btn btn-success" href="/MasterProduct/DownloadTemplate">Tải file mẫu Excel</a>
-            <button class="btn btn-success" type="button" id="buttonUploadProduct">Upload dữ liệu</button>
+            <a class="btn btn-success" href="/SaleOut/DownloadTemplate">Tải file mẫu Excel</a>
+            <button class="btn btn-success" type="button" id="buttonUploadSaleOut">Upload dữ liệu</button>
+            <button class="btn btn-success" type="button" id="buttonBaoCao">Báo cáo doanh thu</button>
         </div>
     </div>
     <p>
@@ -42,9 +43,13 @@
         Html.EndForm();
     }
 </div>
+
 @Html.Partial("Overlay")
 @Html.Partial("PopupSaleOutInsert")
 @Html.Partial("PopupSaleOutUpdate")
+@Html.Partial("PopupSaleOutDelete")
+@Html.Partial("PopupUpload")
+@Html.Partial("PopupBaoCaoDoanhThu")
 
 <div style="margin-bottom:10px;">
     <style>
@@ -68,6 +73,8 @@
                 <th>Số lượng</th>
                 <th>Số lượng/Thùng</th>
                 <th>Số thùng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
             </tr>
         </thead>
         <tbody>
@@ -91,15 +98,18 @@
                            data-productcode="@item.ProductCode"
                            data-productname="@item.ProductName"
                            data-unit="@item.Unit"
+                           data-price="@item.Price"
+                           data-amount="@item.Amount"
                            data-quantity="@item.Quantity"
                            data-quantityperbox="@item.QuantityPerBox"
                            data-boxquantity="@item.BoxQuantity"
                          >
-                            <img src="~/images/edit.png" width="15" />
+                            
+                            <i class="bi bi-pencil-square"></i>
                         </a> |
                         <a class="btnDelete"
                            data-id="@item.Id">
-                            <img src="~/images/delete.png" width="15" />
+                            <i class="bi bi-trash" ></i>
                         </a>
                     </td>
                     <td>@item.CustomerPoNo</td>
@@ -114,9 +124,18 @@
                     <td>@item.ProductCode</td>
                     <td>@item.ProductName</td>
                     <td>@item.Unit</td>
-                    <td>@item.Quantity</td>
-                    <td>@item.QuantityPerBox</td>
-                    <td>@item.BoxQuantity</td>
+                    @{
+                        var quantity = (int)item.Quantity;
+                        var quantityPerBox = (int)item.QuantityPerBox;
+                        var boxQuantity = (int)item.BoxQuantity;
+                        var price = (int)item.Price;
+                        var amount = (int)item.Amount;
+                    }
+                    <td>@quantity</td>
+                    <td>@quantityPerBox</td>
+                    <td>@boxQuantity</td>
+                    <td>@price</td>
+                    <td>@amount</td>
                 </tr>
                 startIndex++;
             }
@@ -160,6 +179,8 @@
     }
     
 </script>
-
+<script src="~/js/UploadSaleOut.js"></script>
 <script src="~/js/InsertSaleOut.js"></script>
 <script src="~/js/EditSaleOut.js"></script>
+<script src="~/js/DeleteSaleOut.js"></script>
+<script src="~/js/BaoCaoDoanhThu.js"></script>

@@ -4,7 +4,7 @@ using web_api.Model;
 
 namespace bt1_api.DBContext
 {
-    public class ApplicationDbContext: DbContext
+    public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
            : base(options)
@@ -12,6 +12,13 @@ namespace bt1_api.DBContext
         }
         public DbSet<MasterProduct> MasterProduct { get; set; }
         public DbSet<SaleOut> SaleOut { get; set; }
-        public DbSet<SaleOut> SaleOutDTO { get; set; }
+        public DbSet<SaleOutDTO> SaleOutDTO { get; set; }
+        public DbSet<SaleOutReport> SaleOutReports { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<SaleOutReport>().HasNoKey();
+        }
     }
 }

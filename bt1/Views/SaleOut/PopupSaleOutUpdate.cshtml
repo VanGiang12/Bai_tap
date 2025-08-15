@@ -2,6 +2,7 @@
     <form method="post" id="FormSaleOutUpdate">
         <input type="hidden" name="Id" id="Id" />
         <input type="hidden" name="ProductId" id="ProductId" />
+        <input type="hidden" name="Amount" id="Amount" />
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;max-width: 800px;">
             <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
                 <label>Số PO khách hàng <span style="color:red">*</span></label>
@@ -21,13 +22,13 @@
                 @Html.DropDownList("ProductCode", (IEnumerable<SelectListItem>)ViewBag.ProductCodes, "Mã sản phẩm", new { @class = "form-control", id = "ProductCode", disabled = "disabled", onchange = "onProductCodeChange()" })
                 <input type="hidden" name="ProductCodeHidden" id="ProductCodeHidden" />
             </div>
-            <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
-                <label>Tên sản phẩm <span style="color:red">*</span></label>
-                <input class="form-control" required type="text" id="ProductName" readonly />
-            </div>
             <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
                 <label>Đơn vị tính <span style="color:red">*</span></label>
                 <input class="form-control" required type="text" id="Unit" />
+            </div>
+             <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
+                <label>Đơn giá<span style="color:red">*</span></label>
+                <input class="form-control" required type="text" id="Price" />
             </div>
             <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
                 <label>Số lượng <span style="color:red">*</span></label>
@@ -40,8 +41,8 @@
             <input type="hidden" name="BoxQuantity" id="BoxQuantity" />
         </div>
         <div style=" margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
-            <button type="button" onclick="hidePopup('PopupSaleOutUpdate')">Đóng</button>
-            <button type="submit" id="submitButton">Sửa</button>
+            <button class="btn btn-sm btn-success" type="button" onclick="hidePopup('PopupSaleOutUpdate')">Đóng</button>
+            <button class="btn btn-sm btn-success" type="submit" id="submitButton">Sửa</button>
         </div>
     </form>
 </div>

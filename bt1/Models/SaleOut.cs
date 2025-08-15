@@ -12,10 +12,12 @@ namespace web_app.Models
         public decimal Quantity { get; set; }
         public decimal QuantityPerBox { get; set; }
         public decimal BoxQuantity { get; set; }
+        public decimal Price { get; set; }
+        public decimal Amount { get; set; }
 
         public Guid ProductId { get; set; }
         public SaleOut() { }
-        public SaleOut(string customerPoNo, int orderDate, string customerName, decimal quantity, decimal quantityPerBox, decimal boxQuantity, Guid productId)
+        public SaleOut(string customerPoNo, int orderDate, string customerName, decimal quantity, decimal quantityPerBox, decimal boxQuantity, Guid productId, decimal price, decimal amount)
         {
             CustomerPoNo = customerPoNo;
             OrderDate = orderDate;
@@ -24,6 +26,8 @@ namespace web_app.Models
             QuantityPerBox = quantityPerBox;
             BoxQuantity = boxQuantity;
             ProductId = productId;
+            Price = price;
+            Amount = amount;
         }
     }
 }

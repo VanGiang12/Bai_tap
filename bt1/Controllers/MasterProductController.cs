@@ -10,6 +10,7 @@ namespace web_app.Controllers
 {
     public class MasterProductController : Controller
     {
+        public static MasterProductController instance;
         private readonly HttpClient _httpClient;
         public MasterProductController(HttpClient httpClient)
         {
@@ -24,7 +25,7 @@ namespace web_app.Controllers
             return products;
         }
 
-        [HttpGet("GetProducts")]
+       /* [HttpGet("GetProducts")]
         public async Task<IActionResult> GetProducts()
         {
             var response = await _httpClient.GetAsync("https://localhost:44343/api/Products");
@@ -35,7 +36,7 @@ namespace web_app.Controllers
             var json = await response.Content.ReadAsStringAsync();
             var products = JsonConvert.DeserializeObject<List<MasterProduct>>(json);
             return Json(products);
-        }
+        }*/
 
         public async Task<IActionResult> Index(string categoryId, string searchValue, string totalPage, int page = 1)
         {
@@ -75,12 +76,16 @@ namespace web_app.Controllers
             }
 
             var propertyNames = typeof(MasterProduct).GetProperties().Select(p => p.Name).ToList();
-            ViewBag.Categories = propertyNames.Select(p => new SelectListItem
+         
+            ViewBag.Categories = new List<SelectListItem>
             {
-                Text = p,
-                Value = p,
-                Selected = (p == categoryId)
-            }).ToList();
+                new SelectListItem{Text="Mã sản phẩm",Value="ProductCode",Selected=(categoryId=="ProductCode")},
+                new SelectListItem{Text="Tên sản phẩm",Value="ProductName",Selected=(categoryId=="ProductName")},
+                new SelectListItem{Text="Đơn vị tính",Value="Unit",Selected=(categoryId=="Unit")},
+                new SelectListItem{Text="Quy cách",Value="Specification",Selected=(categoryId=="Specification")},
+                new SelectListItem{Text="Số lượng/thùng",Value="QuantityPerBox",Selected=(categoryId=="QuantityPerBox")},
+                new SelectListItem{Text="Trọng lượng",Value="ProductWeight",Selected=(categoryId=="ProductWeight")},
+            };
 
             ViewBag.SelectedTotalPage = totalPage ?? "Toàn bộ"; 
             ViewBag.CurrentPage = page;
@@ -91,6 +96,7 @@ namespace web_app.Controllers
 
             return View(products);
         }
+
         [HttpPost]
         public async Task<IActionResult> Insert(MasterProduct model)
         {
@@ -98,7 +104,6 @@ namespace web_app.Controllers
             {
                 client.BaseAddress = new Uri("https://localhost:44343/");
                 var response = await client.PostAsJsonAsync("api/Products", model);
-
             }
 
             return RedirectToAction("Index");
@@ -111,7 +116,6 @@ namespace web_app.Controllers
             {
                 client.BaseAddress = new Uri("https://localhost:44343/");
                 var response = await client.PutAsJsonAsync($"api/Products/{model.Id}", model);
-
             }
 
             return RedirectToAction("Index");
@@ -124,7 +128,6 @@ namespace web_app.Controllers
             {
                 client.BaseAddress = new Uri("https://localhost:44343/");
                 var response = await client.DeleteAsync($"api/Products/{id}");
-
             }
 
             return RedirectToAction("Index");
@@ -168,7 +171,6 @@ namespace web_app.Controllers
             var errors = new List<string>();
             var validProducts = new List<MasterProduct>();
             var products = await MasterProducts();
-
             var existingCodes = products.Select(p => p.ProductCode).ToHashSet();
 
             using (var stream = new MemoryStream())
@@ -194,7 +196,6 @@ namespace web_app.Controllers
                         string quantityStr = worksheet.Cells[row, 5]?.Text?.Trim();
                         string weightStr = worksheet.Cells[row, 6]?.Text?.Trim();
 
-
                         if (string.IsNullOrEmpty(code)) errors.Add($"Dòng {row}: Mã sản phẩm không được để trống");
                         if (string.IsNullOrEmpty(name)) errors.Add($"Dòng {row}: Tên sản phẩm không được để trống");
                         if (string.IsNullOrEmpty(unit)) errors.Add($"Dòng {row}: Đơn vị tính không được để trống");
@@ -202,13 +203,11 @@ namespace web_app.Controllers
                         if (string.IsNullOrEmpty(quantityStr)) errors.Add($"Dòng {row}: Số lượng/Thùng không được để trống");
                         if (string.IsNullOrEmpty(weightStr)) errors.Add($"Dòng {row}: Trọng lượng không được để trống");
 
-
                         if (!string.IsNullOrEmpty(code) && existingCodes.Contains(code))
                         {
                             errors.Add($"Dòng {row}: Mã sản phẩm '{code}' đã có trên hệ thống");
                             continue;
                         }
-
 
                         if (!errors.Any(e => e.Contains($"Dòng {row}:")))
                         {
@@ -225,7 +224,6 @@ namespace web_app.Controllers
                 return Json(new { success = false, errors });
             }
 
-
             var response = await _httpClient.PostAsJsonAsync("https://localhost:44343/api/products/upload", validProducts);
 
             if (!response.IsSuccessStatusCode)
@@ -235,6 +233,5 @@ namespace web_app.Controllers
 
             return Json(new { success = true });
         }
-
     }
 }

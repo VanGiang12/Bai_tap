@@ -16,7 +16,7 @@
 
         form.CustomerName.value = item.dataset.customername;
         form.ProductCode.value = item.dataset.productcode;
-        form.ProductName.value = item.dataset.productname;
+        form.Price.value = item.dataset.price;
         form.Unit.value = item.dataset.unit;
         form.QuantityPerBox.value = item.dataset.quantityperbox;
         form.Quantity.value = item.dataset.quantity;
@@ -53,7 +53,9 @@ document.getElementById("FormSaleOutUpdate").addEventListener("submit", function
         ProductId: form.ProductId.value,
         Quantity: form.Quantity.value,
         QuantityPerBox: form.QuantityPerBox.value,
-        BoxQuantity: Math.ceil(form.Quantity.value / form.QuantityPerBox.value)
+        BoxQuantity: Math.ceil(form.Quantity.value / form.QuantityPerBox.value),
+        Price: form.Price.value,
+        Amount: parseFloat(form.Price.value) * parseFloat(form.Quantity.value)
     };
 
     console.log(formData);

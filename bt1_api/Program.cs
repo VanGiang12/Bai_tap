@@ -1,5 +1,6 @@
 using bt1_api.DBContext;
-using Microsoft.EntityFrameworkCore; 
+using Microsoft.EntityFrameworkCore;
+using web_api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddCors(options =>
                         .AllowAnyHeader()
                         .AllowAnyMethod());
 });
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<SaleOutService>();
 
 var app = builder.Build();
 

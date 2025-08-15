@@ -5,32 +5,32 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;max-width: 800px;">
             <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
                 <label>Mã sản phẩm <span style="color:red">*</span></label>
-                <input required type="text" name="ProductCode" />
+                <input class="form-control" required type="text" name="ProductCode" />
             </div>
             <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
                 <label>Tên sản phẩm <span style="color:red">*</span></label>
-                <input required type="text" name="ProductName" />
+                <input class="form-control" required type="text" name="ProductName" />
             </div>
             <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
                 <label>Đơn vị <span style="color:red">*</span></label>
-                <input required type="text" name="Unit" />
+                <input class="form-control" required type="text" name="Unit" />
             </div>
             <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
                 <label>Qui cách <span style="color:red">*</span></label>
-                <input required type="text" name="Specification" />
+                <input class="form-control" required type="text" name="Specification" />
             </div>
             <div style=" display: flex;flex-direction: column; margin-bottom: 12px;">
                 <label>Só lượng/Thùng <span style="color:red">*</span></label>
-                <input required type="text" name="QuantityPerBox" />
+                <input class="form-control" required type="text" name="QuantityPerBox" />
             </div>
             <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
                 <label>Trọng lượng <span style="color:red">*</span></label>
-                <input required type="text" name="ProductWeight" />
+                <input class="form-control" required type="text" name="ProductWeight" />
             </div>
         </div>
         <div style=" margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
-            <button type="button" onclick="hidePopup('Popup')">Đóng</button>
-            <button type="submit" id="submitButton">Thêm</button>
+            <button class="btn btn-sm btn-success" type="button" onclick="hidePopup('Popup')">Đóng</button>
+            <button class="btn btn-sm btn-success" type="submit" id="submitButton">Thêm</button>
         </div>
     </form>
 </div>

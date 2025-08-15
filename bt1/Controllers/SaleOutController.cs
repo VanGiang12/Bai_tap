@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
+using OfficeOpenXml;
+using web_app.Model;
 using web_app.Models;
 
 namespace web_app.Controllers
@@ -19,6 +21,15 @@ namespace web_app.Controllers
             var saleOuts = JsonConvert.DeserializeObject<List<SaleOutDTO>>(json);
 
             return saleOuts;
+        }
+
+        public async Task<List<MasterProduct>> MasterProducts()
+        {
+            var response = await _httpClient.GetAsync("https://localhost:44343/api/Products");
+            var json = await response.Content.ReadAsStringAsync();
+            var products = JsonConvert.DeserializeObject<List<MasterProduct>>(json);
+
+            return products;
         }
 
         public async Task<IActionResult> Index(string categoryId, string searchValue, string totalPage, int page = 1)
@@ -106,7 +117,6 @@ namespace web_app.Controllers
         [HttpPost]
         public async Task<IActionResult> Insert([FromBody] SaleOut model)
         {
-            // Đảm bảo model binding thành công
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
@@ -149,5 +159,244 @@ namespace web_app.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:44343/");
+                var response = await client.DeleteAsync($"api/SaleOuts/{id}");
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult DownloadTemplate()
+        {
+            var stream = new MemoryStream();
+
+            using (var package = new ExcelPackage(stream))
+            {
+                var worksheet = package.Workbook.Worksheets.Add("SaleOut");
+
+                worksheet.Cells[1, 1].Value = "Số PO khách hàng";
+                worksheet.Cells[1, 2].Value = "Ngày đặt hàng";
+                worksheet.Cells[1, 3].Value = "Khách hàng";
+                worksheet.Cells[1, 4].Value = "Mã sản phẩm";
+                worksheet.Cells[1, 5].Value = "Đơn vị tính";
+                worksheet.Cells[1, 6].Value = "Đơn giá";
+                worksheet.Cells[1, 7].Value = "Số lượng";
+                worksheet.Cells[1, 8].Value = "Số lượng/thùng";
+                worksheet.Cells[1, 1, 1, 9].Style.Font.Bold = true;
+                worksheet.Column(2).Style.Numberformat.Format = "yyyy-MM-dd";
+                worksheet.Cells.AutoFitColumns();
+
+                package.Save();
+            }
+
+            stream.Position = 0;
+            string excelName = $"SaleOut_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
+        }
+        [HttpPost]
+        public async Task<IActionResult> UploadExcel(IFormFile uploadFile)
+        {
+            if (uploadFile == null || uploadFile.Length == 0)
+            {
+                return Json(new { success = false, errors = new List<string> { "Vui lòng chọn tệp Excel." } });
+            }
+
+            var errors = new List<string>();
+            var validSaleOuts = new List<SaleOut>();
+
+            var existingSaleOuts = await SaleOuts();
+            var existingKeys = existingSaleOuts
+                .Select(s => $"{s.CustomerPoNo}__{s.ProductCode}")
+                .ToHashSet();
+
+            var masterProducts = await MasterProducts();
+            var productDict = masterProducts.ToDictionary(p => p.ProductCode, p => p);
+
+            using (var stream = new MemoryStream())
+            {
+                await uploadFile.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+                    if (worksheet == null)
+                    {
+                        return Json(new { success = false, errors = new List<string> { "File không chứa sheet hợp lệ." } });
+                    }
+
+                    int rowCount = worksheet.Dimension.Rows;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        string poNo = worksheet.Cells[row, 1]?.Text?.Trim();
+                        object orderDateRaw = worksheet.Cells[row, 2]?.Value;
+                        string customerName = worksheet.Cells[row, 3]?.Text?.Trim();
+                        string productCode = worksheet.Cells[row, 4]?.Text?.Trim();
+                        string unit = worksheet.Cells[row, 5]?.Text?.Trim();
+                        string priceStr = worksheet.Cells[row, 6]?.Text?.Trim();
+                        string quantityStr = worksheet.Cells[row, 7]?.Text?.Trim();
+                        string quantityPerBoxStr = worksheet.Cells[row, 8]?.Text?.Trim();
+
+                        if (string.IsNullOrEmpty(poNo)) errors.Add($"Dòng {row}: Số PO khách hàng không được để trống");
+                        if (orderDateRaw == null || string.IsNullOrEmpty(orderDateRaw.ToString())) errors.Add($"Dòng {row}: Ngày đặt hàng không được để trống");
+                        if (string.IsNullOrEmpty(customerName)) errors.Add($"Dòng {row}: Khách hàng không được để trống");
+                        if (string.IsNullOrEmpty(productCode)) errors.Add($"Dòng {row}: Mã sản phẩm không được để trống");
+                        if (string.IsNullOrEmpty(unit)) errors.Add($"Dòng {row}: Đơn vị tính không được để trống");
+                        if (string.IsNullOrEmpty(priceStr)) errors.Add($"Dòng {row}: đơn giá không được để trống");
+                        if (string.IsNullOrEmpty(quantityStr)) errors.Add($"Dòng {row}: Số lượng không được để trống");
+                        if (string.IsNullOrEmpty(quantityPerBoxStr)) errors.Add($"Dòng {row}: Số lượng/thùng không được để trống");
+
+                        if (errors.Any(e => e.Contains($"Dòng {row}:"))) continue;
+
+                        var key = $"{poNo}__{productCode}";
+                        if (existingKeys.Contains(key))
+                        {
+                            errors.Add($"Dòng {row}: Số PO khách hàng '{poNo}'; Mã sản phẩm '{productCode}' đã có trên hệ thống");
+                            continue;
+                        }
+
+                        int orderDateInt;
+                        try
+                        {
+                            DateTime dateValue;
+                            if (orderDateRaw is double oaDate)
+                            {
+                                dateValue = DateTime.FromOADate(oaDate);
+                            }
+                            else if (DateTime.TryParse(orderDateRaw.ToString(), out var parsedDate))
+                            {
+                                dateValue = parsedDate;
+                            }
+                            else
+                            {
+                                errors.Add($"Dòng {row}: Ngày đặt hàng không hợp lệ");
+                                continue;
+                            }
+                            orderDateInt = int.Parse(dateValue.ToString("yyyyMMdd"));
+                        }
+                        catch
+                        {
+                            errors.Add($"Dòng {row}: Ngày đặt hàng không hợp lệ");
+                            continue;
+                        }
+
+                        if (!decimal.TryParse(quantityStr, out var quantity))
+                        {
+                            errors.Add($"Dòng {row}: Số lượng không hợp lệ");
+                            continue;
+                        }
+                        if (!decimal.TryParse(quantityPerBoxStr, out var quantityPerBox))
+                        {
+                            errors.Add($"Dòng {row}: Số lượng/thùng không hợp lệ");
+                            continue;
+                        }
+                        if (!decimal.TryParse(priceStr, out var price))
+                        {
+                            errors.Add($"Dòng {row}: Đơn giá không hợp lệ");
+                            continue;
+                        }
+
+                        if (!productDict.TryGetValue(productCode, out var productInfo))
+                        {
+                            errors.Add($"Dòng {row}: Mã sản phẩm '{productCode}' không tồn tại trong Master Sản phẩm");
+                            continue;
+                        }
+
+                        decimal boxQuantity = quantityPerBox != 0 ? quantity / quantityPerBox : 0;
+
+                        validSaleOuts.Add(new SaleOut
+                        {
+                            CustomerPoNo = poNo,
+                            OrderDate = orderDateInt,
+                            CustomerName = customerName,
+                            Quantity = quantity,
+                            QuantityPerBox = quantityPerBox,
+                            BoxQuantity = boxQuantity,
+                            ProductId = productInfo.Id,
+                            Price = price,
+                            Amount = price * quantity
+                        });
+                    }
+                }
+            }
+
+            if (errors.Any())
+            {
+                return Json(new { success = false, errors });
+            }
+
+            var response = await _httpClient.PostAsJsonAsync("https://localhost:44343/api/saleouts/upload", validSaleOuts);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Json(new { success = false, errors = new List<string> { "Gửi dữ liệu sang API thất bại." } });
+            }
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DownloadSaleOutReport(DateTime startDate, DateTime endDate)
+        {
+ 
+            int start = int.Parse(startDate.ToString("yyyyMMdd"));
+            int end = int.Parse(endDate.ToString("yyyyMMdd"));
+            Console.WriteLine("start - " + start);
+            var url = $"https://localhost:44343/api/SaleOuts/saleout-report?startDate={start}&endDate={end}";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, "Lỗi khi lấy dữ liệu từ API báo cáo.");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var reportData = JsonConvert.DeserializeObject<List<SaleOutReport>>(json);
+
+            if (reportData == null)
+            {
+                return BadRequest("Dữ liệu báo cáo rỗng.");
+            }
+
+            var stream = new MemoryStream();
+            using (var package = new ExcelPackage(stream))
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Báo cáo tổng hợp");
+
+                worksheet.Cells[1, 1].Value = "STT";
+                worksheet.Cells[1, 2].Value = "Mã sản phẩm";
+                worksheet.Cells[1, 3].Value = "Tên sản phẩm";
+                worksheet.Cells[1, 4].Value = "Số lượng";
+                worksheet.Cells[1, 5].Value = "Đơn giá";
+                worksheet.Cells[1, 6].Value = "Thành tiền";
+
+                int row = 2;
+                int count = 1;
+                foreach (var item in reportData)
+                {
+                    worksheet.Cells[row, 1].Value = count;
+                    worksheet.Cells[row, 2].Value = item.ProductCode;
+                    worksheet.Cells[row, 3].Value = item.ProductName;
+                    worksheet.Cells[row, 4].Value = item.TotalQuantity;
+                    worksheet.Cells[row, 5].Value = item.UnitPrice;
+                    worksheet.Cells[row, 6].Value = item.TotalAmount;
+                    row++;
+                    count++;
+                }
+
+                worksheet.Cells[1, 1, 1, 6].Style.Font.Bold = true;
+                worksheet.Cells.AutoFitColumns();
+                package.Save();
+            }
+
+            stream.Position = 0;
+            string excelName = $"SaleOutReport_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
+        }
     }
 }

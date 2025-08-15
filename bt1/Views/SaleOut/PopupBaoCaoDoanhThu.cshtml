@@ -1,0 +1,19 @@
+﻿<div id="PopupBaoCaoDoanhThu" style="z-index:100;display:none; position:fixed; top:50%; left:50%;transform: translate(-50%, -50%); width:60%; background:#fff; border:1px solid #ccc; padding:20px; box-shadow:0 0 10px #000;">
+    <form asp-action="DownloadSaleOutReport" method="post" id="FormBaoCaoDoanhThu">
+        <h3>Báo cáo doanh thu</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;max-width: 800px;">
+            <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
+                <label>Từ ngày <span style="color:red">*</span></label>
+                <input class="form-control" required type="date" name="StartDate" id="StartDate" />
+            </div>
+            <div style=" display: flex; flex-direction: column; margin-bottom: 12px;">
+                <label>Đến ngày <span style="color:red">*</span></label>
+                <input class="form-control" required type="date" name="EndDate" id="EndDate" />
+            </div>
+        </div>
+        <div style=" margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button class="btn btn-sm btn-success" type="button" onclick="hidePopup('PopupBaoCaoDoanhThu')">Đóng</button>
+            <button class="btn btn-sm btn-success" type="submit" id="submitButton">Xuất File</button>
+        </div>
+    </form>
+</div>
